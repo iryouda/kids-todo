@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<!-- saved from url=(0101)file:///C:/Users/%E3%82%B7%E3%82%B9%E5%88%B6%20%E4%BD%90%E3%80%85%E6%9C%A8/Downloads/kids-todo_9.html -->
-<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>やることリスト</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="やることリスト">
-<link rel="apple-touch-icon" href="file:///C:/Users/%E3%82%B7%E3%82%B9%E5%88%B6%20%E4%BD%90%E3%80%85%E6%9C%A8/Downloads/icon.png">
-<link href="./index_files/css2" rel="stylesheet">
+<link rel="apple-touch-icon" href="/kids-todo/icon.png">
+<link rel="apple-touch-icon-precomposed" href="/kids-todo/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Yomogi&display=swap" rel="stylesheet">
 <style>
   :root {
     --morning-bg: linear-gradient(135deg, #fff7c2 0%, #ffe0a0 50%, #ffd0b0 100%);
@@ -454,68 +455,28 @@
   .emoji-free-row button:active { opacity: 0.8; }
 </style>
 </head>
-<body class="home">
+<body class="morning">
 
 <!-- decorative floating elements -->
 <div class="deco" id="deco1">⭐</div>
 <div class="deco" id="deco2">☁️</div>
 <div class="deco" id="deco3">✨</div>
-<div class="deco" id="deco4">⭐</div>
+<div class="deco" id="deco4">🌙</div>
 <div class="deco" id="deco5">🌟</div>
 
 <div id="app">
   <div class="header">
-    <div class="date-time" id="clock">04月18日　16時55分44秒</div>
-    <span class="mode-icon" id="mode-icon">🏠</span>
-    <div class="mode-title" id="mode-title">おうちでやること</div>
+    <div class="date-time" id="clock">00月00日　00時00分00秒</div>
+    <span class="mode-icon" id="mode-icon">☀️</span>
+    <div class="mode-title" id="mode-title">あさのおしたく</div>
   </div>
 
   <div class="progress-wrap">
-    <div class="progress-bar" id="progress-bar" style="width: 90%;"></div>
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
   </div>
-  <div class="progress-text" id="progress-text">9 / 10 おわったよ！</div>
+  <div class="progress-text" id="progress-text">0 / 0 おわったよ！</div>
 
-  <ul id="todo-list"><li class="todo-item done" style="animation-delay: 0s;">
-      <div class="check-circle">✔</div>
-      <span class="item-emoji">⭐</span>
-      <span class="item-label">１</span>
-    </li><li class="todo-item done" style="animation-delay: 0.06s;">
-      <div class="check-circle">✔</div>
-      <span class="item-emoji">⭐</span>
-      <span class="item-label">２</span>
-    </li><li class="todo-item done" style="animation-delay: 0.12s;">
-      <div class="check-circle">✔</div>
-      <span class="item-emoji">⭐</span>
-      <span class="item-label">３</span>
-    </li><li class="todo-item done" style="animation-delay: 0.18s;">
-      <div class="check-circle">✔</div>
-      <span class="item-emoji">⭐</span>
-      <span class="item-label">４</span>
-    </li><li class="todo-item" style="animation-delay: 0.24s;">
-      <div class="check-circle"></div>
-      <span class="item-emoji">⭐</span>
-      <span class="item-label">５</span>
-    </li><li class="todo-item done" style="animation-delay: 0.3s;">
-      <div class="check-circle">✔</div>
-      <span class="item-emoji">📚</span>
-      <span class="item-label">しゅくだいをする</span>
-    </li><li class="todo-item done" style="animation-delay: 0.36s;">
-      <div class="check-circle">✔</div>
-      <span class="item-emoji">🎒</span>
-      <span class="item-label">あしたのじゅんびをする</span>
-    </li><li class="todo-item done" style="animation-delay: 0.42s;">
-      <div class="check-circle">✔</div>
-      <span class="item-emoji">🦷</span>
-      <span class="item-label">はをみがく</span>
-    </li><li class="todo-item done" style="animation-delay: 0.48s;">
-      <div class="check-circle">✔</div>
-      <span class="item-emoji">😴</span>
-      <span class="item-label">ねるじかんになったら、おふとんへ</span>
-    </li><li class="todo-item done" style="animation-delay: 0.54s;">
-      <div class="check-circle">✔</div>
-      <span class="item-emoji">🛁</span>
-      <span class="item-label">おふろにはいる</span>
-    </li></ul>
+  <ul id="todo-list"></ul>
 
   <button id="edit-btn">✏️ こうもくをへんしゅう</button>
 </div>
@@ -535,8 +496,8 @@
   <div id="modal">
     <h2>📝 こうもくをへんしゅうする</h2>
     <div class="mode-tabs">
-      <button class="mode-tab active-morning" id="tab-morning" onclick="switchEditTab(&#39;morning&#39;)">☀️ あさ</button>
-      <button class="mode-tab" id="tab-home" onclick="switchEditTab(&#39;home&#39;)">🏠 おうち</button>
+      <button class="mode-tab active-morning" id="tab-morning" onclick="switchEditTab('morning')">☀️ あさ</button>
+      <button class="mode-tab" id="tab-home" onclick="switchEditTab('home')">🏠 おうち</button>
     </div>
     <div id="item-editor"></div>
     <button id="add-item-btn" onclick="addEditRow()">＋ こうもくをつける</button>
@@ -549,7 +510,7 @@
 
 <!-- emoji picker -->
 <div id="emoji-picker">
-  <span class="emoji-cat-label">からだ・せいけつ</span><div class="emoji-row"><span title="🚽">🚽</span><span title="🧴">🧴</span><span title="💊">💊</span><span title="🩹">🩹</span><span title="🧼">🧼</span><span title="🪥">🪥</span><span title="🦷">🦷</span><span title="🛁">🛁</span><span title="🚿">🚿</span><span title="🧻">🧻</span><span title="👐">👐</span><span title="🩺">🩺</span></div><span class="emoji-cat-label">きがえ・したく</span><div class="emoji-row"><span title="👕">👕</span><span title="👗">👗</span><span title="👖">👖</span><span title="🧥">🧥</span><span title="🧣">🧣</span><span title="👒">👒</span><span title="🧦">🧦</span><span title="👟">👟</span><span title="👜">👜</span><span title="🎒">🎒</span><span title="🧢">🧢</span><span title="👓">👓</span></div><span class="emoji-cat-label">たべもの</span><div class="emoji-row"><span title="🍚">🍚</span><span title="🍞">🍞</span><span title="🥛">🥛</span><span title="🍎">🍎</span><span title="🍌">🍌</span><span title="🍜">🍜</span><span title="🥚">🥚</span><span title="🧃">🧃</span><span title="🍱">🍱</span><span title="🥞">🥞</span><span title="🍙">🍙</span><span title="🍇">🍇</span></div><span class="emoji-cat-label">べんきょう</span><div class="emoji-row"><span title="📚">📚</span><span title="📓">📓</span><span title="✏️">✏️</span><span title="📐">📐</span><span title="🖍️">🖍️</span><span title="📖">📖</span><span title="🎨">🎨</span><span title="🖊️">🖊️</span></div><span class="emoji-cat-label">あそび・うごき</span><div class="emoji-row"><span title="🎮">🎮</span><span title="🧸">🧸</span><span title="🎵">🎵</span><span title="🏃">🏃</span><span title="⚽">⚽</span><span title="🎲">🎲</span><span title="🧩">🧩</span><span title="🎯">🎯</span></div><span class="emoji-cat-label">いえ・せいそう</span><div class="emoji-row"><span title="🧹">🧹</span><span title="🧺">🧺</span><span title="🛏️">🛏️</span><span title="🪴">🪴</span><span title="🪣">🪣</span><span title="🧽">🧽</span><span title="🏠">🏠</span></div><span class="emoji-cat-label">かざり・きもち</span><div class="emoji-row"><span title="⭐">⭐</span><span title="🌟">🌟</span><span title="✨">✨</span><span title="❤️">❤️</span><span title="🌈">🌈</span><span title="🌙">🌙</span><span title="☀️">☀️</span><span title="💪">💪</span><span title="🎉">🎉</span><span title="🌸">🌸</span><span title="🐶">🐶</span><span title="🐱">🐱</span><span title="🐰">🐰</span><span title="🦊">🦊</span></div><div class="emoji-free-input-wrap">
+  <div class="emoji-free-input-wrap">
     <span class="emoji-free-label">⌨️ じゆうにいれる</span>
     <div class="emoji-free-row">
       <input type="text" id="emoji-free-input" maxlength="2" placeholder="😀">
@@ -1061,6 +1022,5 @@ if (params.get('mode') === 'home') {
   renderMode();
 }
 </script>
-
-
-</body></html>
+</body>
+</html>
