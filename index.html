@@ -1005,7 +1005,9 @@ document.getElementById('edit-btn').addEventListener('click', openModal);
 document.getElementById('modal-overlay').addEventListener('click', (e) => {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
 });
-document.addEventListener('click', () => closeEmojiPicker());
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#emoji-picker')) closeEmojiPicker();
+});
 
 buildEmojiPicker();
 renderMode();
