@@ -428,31 +428,64 @@
     display: block;
     margin-bottom: 4px;
   }
-  .emoji-free-row {
-    display: flex; gap: 6px; align-items: center;
-  }
-  .emoji-free-row input {
-    width: 52px;
-    font-size: 1.4rem;
-    text-align: center;
-    border: 2px solid #ddd;
+  .emoji-free-btn {
+    width: 100%;
+    padding: 7px;
     border-radius: 10px;
-    padding: 4px;
-    outline: none;
-  }
-  .emoji-free-row input:focus { border-color: #ffb347; }
-  .emoji-free-row button {
-    flex: 1;
-    padding: 6px 8px;
-    border-radius: 10px;
-    border: none;
-    background: #ffb347;
-    color: white;
+    border: 2px dashed #ffb347;
+    background: #fff8ee;
     font-family: 'Kosugi Maru', sans-serif;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
+    color: #e07000;
     cursor: pointer;
   }
-  .emoji-free-row button:active { opacity: 0.8; }
+
+  /* 自由入力ダイアログ */
+  #emoji-input-dialog {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+  }
+  #emoji-input-dialog.open { display: flex; }
+  #emoji-input-box {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    width: 80%;
+    max-width: 300px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  }
+  #emoji-input-box p {
+    font-family: 'Kosugi Maru', sans-serif;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 12px;
+  }
+  #emoji-input-box input {
+    font-size: 2.5rem;
+    text-align: center;
+    width: 80px;
+    border: 3px solid #ffb347;
+    border-radius: 14px;
+    padding: 8px;
+    outline: none;
+    display: block;
+    margin: 0 auto 14px;
+  }
+  .emoji-dialog-btns { display: flex; gap: 8px; }
+  .emoji-dialog-btns button {
+    flex: 1; padding: 10px;
+    border-radius: 12px; border: none;
+    font-family: 'Kosugi Maru', sans-serif;
+    font-size: 0.9rem; cursor: pointer;
+  }
+  #emoji-dialog-ok     { background: #ffb347; color: white; }
+  #emoji-dialog-cancel { background: #eee; color: #555; }
 </style>
 </head>
 <body class="morning">
@@ -512,9 +545,18 @@
 <div id="emoji-picker">
   <div class="emoji-free-input-wrap">
     <span class="emoji-free-label">⌨️ じゆうにいれる</span>
-    <div class="emoji-free-row">
-      <input type="text" id="emoji-free-input" maxlength="2" placeholder="😀">
-      <button onclick="applyFreeEmoji()">これにする</button>
+    <button class="emoji-free-btn" onclick="openEmojiDialog(); event.stopPropagation();">✏️ キーボードからえらぶ</button>
+  </div>
+</div>
+
+<!-- 自由入力ダイアログ -->
+<div id="emoji-input-dialog">
+  <div id="emoji-input-box">
+    <p>😀キーボードの🌍か😀ボタンで<br>えもじをえらんでね</p>
+    <input type="text" id="emoji-free-input" maxlength="2" placeholder="😀">
+    <div class="emoji-dialog-btns">
+      <button id="emoji-dialog-cancel" onclick="closeEmojiDialog()">やめる</button>
+      <button id="emoji-dialog-ok" onclick="applyFreeEmoji()">これにする</button>
     </div>
   </div>
 </div>
@@ -984,7 +1026,17 @@ function applyFreeEmoji() {
     items[editingTab][activeEmojiTarget].emoji = val;
     renderEditTab();
   }
+  closeEmojiDialog();
   closeEmojiPicker();
+}
+function openEmojiDialog() {
+  document.getElementById('emoji-free-input').value = '';
+  document.getElementById('emoji-input-dialog').classList.add('open');
+  closeEmojiPicker();
+  setTimeout(() => document.getElementById('emoji-free-input').focus(), 100);
+}
+function closeEmojiDialog() {
+  document.getElementById('emoji-input-dialog').classList.remove('open');
 }
 function openEmojiPicker(btn, index) {
   activeEmojiTarget = index;
