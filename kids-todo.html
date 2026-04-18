@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>きょうのおしごと</title>
+<link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Yomogi&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --morning-bg: linear-gradient(135deg, #fff7c2 0%, #ffe0a0 50%, #ffd0b0 100%);
+    --morning-panel: #fff8e7;
+    --morning-accent: #ffb347;
+    --morning-check: #ff8c42;
+    --morning-title: #e07000;
+    --home-bg: linear-gradient(135deg, #d0f0ff 0%, #b8e0ff 50%, #c8d8ff 100%);
+    --home-panel: #eef8ff;
+    --home-accent: #5ba8e0;
+    --home-check: #3a85c8;
+    --home-title: #1a5fa0;
+    --star-color: #ffd700;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Kosugi Maru', sans-serif;
+    min-height: 100vh;
+    transition: background 1s ease;
+    overflow-x: hidden;
+  }
+
+  body.morning { background: var(--morning-bg); }
+  body.home    { background: var(--home-bg); }
+
+  /* ── floating stars / clouds ── */
+  .deco {
+    position: fixed; pointer-events: none; z-index: 0;
+    font-size: 2rem; opacity: 0.25;
+    animation: floaty 6s ease-in-out infinite;
+  }
+  .deco:nth-child(1) { top:5%;  left:3%;  animation-delay:0s; }
+  .deco:nth-child(2) { top:12%; right:5%; animation-delay:1.5s; font-size:1.5rem; }
+  .deco:nth-child(3) { top:45%; left:1%; animation-delay:3s;   font-size:1rem; }
+  .deco:nth-child(4) { bottom:10%; right:3%; animation-delay:2s; font-size:2.5rem; }
+  .deco:nth-child(5) { bottom:20%; left:5%;  animation-delay:4s; font-size:1.2rem; }
+  @keyframes floaty {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-12px) rotate(8deg); }
+  }
+
+  /* ── main wrapper ── */
+  #app {
+    position: relative; z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px 12px 40px;
+    min-height: 100vh;
+  }
+
+  /* ── header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 18px;
+    animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.7) translateY(-20px); opacity:0; }
+    to   { transform: scale(1) translateY(0);       opacity:1; }
+  }
+  .mode-icon { font-size: 3.2rem; display: block; line-height: 1; margin-bottom: 4px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.15)); }
+  .mode-title {
+    font-family: 'Yomogi', cursive;
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transition: color 1s;
+  }
+  body.morning .mode-title { color: var(--morning-title); }
+  body.home    .mode-title { color: var(--home-title); }
+
+  .date-time {
+    font-size: 1.45rem;
+    font-family: 'Yomogi', cursive;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+    transition: color 1s;
+  }
+  body.morning .date-time { color: var(--morning-title); }
+  body.home    .date-time { color: var(--home-title); }
+
+  /* ── progress bar ── */
+  .progress-wrap {
+    background: rgba(255,255,255,0.5);
+    border-radius: 20px;
+    height: 12px;
+    margin: 0 4px 18px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);
+  }
+  .progress-bar {
+    height: 100%;
+    border-radius: 20px;
+    transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1), background 1s;
+    background: var(--morning-check);
+  }
+  body.home .progress-bar { background: var(--home-check); }
+
+  .progress-text {
+    text-align: center;
+    font-size: 0.78rem;
+    opacity: 0.6;
+    margin-top: -12px;
+    margin-bottom: 14px;
+  }
+
+  /* ── todo list ── */
+  #todo-list { list-style: none; }
+
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.3s, background 1s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    -webkit-tap-highlight-color: transparent;
+    animation: slideIn 0.4s cubic-bezier(0.34,1.4,0.64,1) both;
+  }
+  body.morning .todo-item { background: var(--morning-panel); }
+  body.home    .todo-item { background: var(--home-panel); }
+
+  .todo-item:active { transform: scale(0.97); }
+  .todo-item.done   { opacity: 0.55; }
+
+  @keyframes slideIn {
+    from { transform: translateX(-30px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+
+  /* checkbox circle */
+  .check-circle {
+    flex-shrink: 0;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 3px solid;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    transition: background 0.25s, transform 0.25s, border-color 1s;
+  }
+  body.morning .check-circle { border-color: var(--morning-accent); }
+  body.home    .check-circle { border-color: var(--home-accent); }
+
+  .todo-item.done .check-circle {
+    color: white;
+  }
+  body.morning .todo-item.done .check-circle { background: var(--morning-check); border-color: var(--morning-check); }
+  body.home    .todo-item.done .check-circle { background: var(--home-check);    border-color: var(--home-check); }
+
+  .todo-item.done .check-circle { transform: scale(1.15); }
+
+  /* emoji & label */
+  .item-emoji { font-size: 1.5rem; flex-shrink: 0; }
+  .item-label {
+    flex: 1;
+    font-size: 1.1rem;
+    line-height: 1.3;
+    transition: color 0.3s;
+  }
+  .todo-item.done .item-label {
+    text-decoration: line-through;
+    color: #999;
+  }
+
+  /* ── celebration overlay ── */
+  #celebration {
+    display: none;
+    position: fixed; inset: 0;
+    z-index: 300;
+    align-items: center; justify-content: center;
+    flex-direction: column;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #celebration.show { display: flex; }
+  body.morning #celebration { background: linear-gradient(135deg, #fff7c2 0%, #ffe0a0 50%, #ffd0b0 100%); }
+  body.home    #celebration { background: linear-gradient(135deg, #d0f0ff 0%, #b8e0ff 50%, #c8d8ff 100%); }
+
+  .celeb-inner {
+    text-align: center;
+    animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  .celeb-emoji {
+    font-size: 8rem;
+    display: block;
+    line-height: 1;
+    animation: bounce-big 1s ease-in-out infinite;
+  }
+  @keyframes bounce-big {
+    0%,100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-20px) scale(1.05); }
+  }
+  .celeb-title {
+    font-family: 'Yomogi', cursive;
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-top: 20px;
+    transition: color 1s;
+  }
+  body.morning .celeb-title { color: var(--morning-title); }
+  body.home    .celeb-title { color: var(--home-title); }
+  .celeb-sub {
+    font-size: 1.2rem;
+    color: #777;
+    margin-top: 12px;
+  }
+  .celeb-hint {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-top: 40px;
+    letter-spacing: 0.05em;
+  }
+
+  /* confetti */
+  .confetti-wrap {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 301;
+    overflow: hidden;
+  }
+  .conf {
+    position: absolute;
+    top: -20px;
+    width: 10px; height: 14px;
+    border-radius: 2px;
+    animation: fall linear infinite;
+  }
+  @keyframes fall {
+    0%   { transform: translateY(-20px) rotate(0deg);   opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── edit button ── */
+  #edit-btn {
+    display: block;
+    margin: 22px auto 0;
+    padding: 10px 26px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Kosugi Maru', sans-serif;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: transform 0.15s, background 1s, box-shadow 0.15s;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    color: white;
+  }
+  body.morning #edit-btn { background: var(--morning-accent); }
+  body.home    #edit-btn { background: var(--home-accent); }
+  #edit-btn:active { transform: scale(0.96); }
+
+  /* ── modal ── */
+  #modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  #modal-overlay.open { display: flex; }
+
+  #modal {
+    background: white;
+    border-radius: 28px;
+    padding: 24px 20px 20px;
+    width: 90%; max-width: 440px;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  #modal h2 {
+    font-family: 'Yomogi', cursive;
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 14px;
+    color: #444;
+  }
+
+  .mode-tabs {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .mode-tab {
+    flex: 1;
+    padding: 8px 4px;
+    border-radius: 14px;
+    border: 2px solid #ddd;
+    background: #f5f5f5;
+    font-family: 'Kosugi Maru', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    color: #555;
+  }
+  .mode-tab.active-morning { background: #fff3d6; border-color: var(--morning-accent); color: var(--morning-title); }
+  .mode-tab.active-home    { background: #ddeeff; border-color: var(--home-accent);    color: var(--home-title); }
+
+  .item-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+    transition: opacity 0.2s, transform 0.15s;
+    cursor: default;
+  }
+  .item-row.dragging   { opacity: 0.4; }
+  .item-row.drag-over  { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); border-radius: 12px; }
+  .drag-handle {
+    font-size: 1.1rem; color: #ccc; cursor: grab;
+    padding: 4px 2px;
+    touch-action: none;
+    user-select: none;
+  }
+  .drag-handle:active { cursor: grabbing; }
+  .item-row input[type="text"] {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    font-family: 'Kosugi Maru', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .item-row input:focus { border-color: var(--morning-accent); }
+  .item-row .emoji-pick {
+    font-size: 1.4rem;
+    background: none;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 4px 7px;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .item-row .emoji-pick:active { transform: scale(0.9); }
+  .item-row .del-btn {
+    background: #ffe0e0;
+    border: none;
+    border-radius: 10px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #e05555;
+  }
+
+  #add-item-btn {
+    width: 100%;
+    padding: 9px;
+    border: 2px dashed #ccc;
+    border-radius: 14px;
+    background: none;
+    font-family: 'Kosugi Maru', sans-serif;
+    font-size: 0.9rem;
+    color: #888;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: background 0.2s;
+  }
+  #add-item-btn:hover { background: #f5f5f5; }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .modal-actions button {
+    flex: 1; padding: 11px;
+    border-radius: 14px; border: none;
+    font-family: 'Kosugi Maru', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .modal-actions button:active { transform: scale(0.97); }
+  #save-btn  { background: #5cb85c; color: white; }
+  #close-btn { background: #eee; color: #555; }
+
+  /* emoji picker popover */
+  #emoji-picker {
+    display: none;
+    position: fixed;
+    z-index: 200;
+    background: white;
+    border-radius: 16px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    width: 280px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  #emoji-picker.open { display: block; }
+  .emoji-cat-label {
+    font-size: 0.7rem;
+    color: #aaa;
+    font-family: 'Kosugi Maru', sans-serif;
+    margin: 8px 0 3px;
+    display: block;
+  }
+  .emoji-cat-label:first-child { margin-top: 0; }
+  .emoji-row { display: flex; flex-wrap: wrap; gap: 3px; }
+  #emoji-picker span {
+    font-size: 1.5rem; cursor: pointer; padding: 4px;
+    border-radius: 8px; transition: background 0.1s;
+  }
+  #emoji-picker span:hover { background: #f0f0f0; }
+</style>
+</head>
+<body class="morning">
+
+<!-- decorative floating elements -->
+<div class="deco" id="deco1">⭐</div>
+<div class="deco" id="deco2">☁️</div>
+<div class="deco" id="deco3">✨</div>
+<div class="deco" id="deco4">🌙</div>
+<div class="deco" id="deco5">🌟</div>
+
+<div id="app">
+  <div class="header">
+    <div class="date-time" id="clock">00月00日　00時00分00秒</div>
+    <span class="mode-icon" id="mode-icon">☀️</span>
+    <div class="mode-title" id="mode-title">あさのおしたく</div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+  </div>
+  <div class="progress-text" id="progress-text">0 / 0 おわったよ！</div>
+
+  <ul id="todo-list"></ul>
+
+  <button id="edit-btn">✏️ こうもくをへんしゅう</button>
+</div>
+
+<div class="confetti-wrap" id="confetti-wrap"></div>
+<div id="celebration" onclick="closeCelebration()">
+  <div class="celeb-inner">
+    <span class="celeb-emoji" id="celeb-emoji">🎉</span>
+    <div class="celeb-title">ぜんぶできた！</div>
+    <div class="celeb-sub">すごいね！えらい！</div>
+    <div class="celeb-hint">どこかタッチしたらもどるよ</div>
+  </div>
+</div>
+
+<!-- modal -->
+<div id="modal-overlay">
+  <div id="modal">
+    <h2>📝 こうもくをへんしゅうする</h2>
+    <div class="mode-tabs">
+      <button class="mode-tab active-morning" id="tab-morning" onclick="switchEditTab('morning')">☀️ あさ</button>
+      <button class="mode-tab" id="tab-home" onclick="switchEditTab('home')">🏠 おうち</button>
+    </div>
+    <div id="item-editor"></div>
+    <button id="add-item-btn" onclick="addEditRow()">＋ こうもくをつける</button>
+    <div class="modal-actions">
+      <button id="close-btn" onclick="closeModal()">とじる</button>
+      <button id="save-btn" onclick="saveItems()">💾 ほぞん</button>
+    </div>
+  </div>
+</div>
+
+<!-- emoji picker -->
+<div id="emoji-picker"></div>
+
+<script>
+// ── default items ──
+const DEFAULT = {
+  morning: [
+    { emoji:'👕', label:'ふくをきる', done:false },
+    { emoji:'🍚', label:'あさごはんをたべる', done:false },
+    { emoji:'🦷', label:'はをみがく', done:false },
+    { emoji:'👜', label:'ランドセルをしょう', done:false },
+    { emoji:'👟', label:'くつをはく', done:false },
+  ],
+  home: [
+    { emoji:'📚', label:'しゅくだいをする', done:false },
+    { emoji:'🎒', label:'あしたのじゅんびをする', done:false },
+    { emoji:'🛁', label:'おふろにはいる', done:false },
+    { emoji:'🦷', label:'はをみがく', done:false },
+    { emoji:'😴', label:'ねるじかんになったら、おふとんへ', done:false },
+  ],
+};
+
+const EMOJI_CATEGORIES = [
+  { label:'からだ・せいけつ', emojis:['🚽','🧴','💊','🩹','🧼','🪥','🦷','🛁','🚿','🧻','👐','🩺'] },
+  { label:'きがえ・したく',   emojis:['👕','👗','👖','🧥','🧣','👒','🧦','👟','👜','🎒','🧢','👓'] },
+  { label:'たべもの',         emojis:['🍚','🍞','🥛','🍎','🍌','🍜','🥚','🧃','🍱','🥞','🍙','🍇'] },
+  { label:'べんきょう',       emojis:['📚','📓','✏️','📐','🖍️','📖','🎨','🖊️'] },
+  { label:'あそび・うごき',   emojis:['🎮','🧸','🎵','🏃','⚽','🎲','🧩','🎯'] },
+  { label:'いえ・せいそう',   emojis:['🧹','🧺','🛏️','🪴','🪣','🧽','🏠'] },
+  { label:'かざり・きもち',   emojis:['⭐','🌟','✨','❤️','🌈','🌙','☀️','💪','🎉','🌸','🐶','🐱','🐰','🦊'] },
+];
+
+// ── state ──
+let currentMode = 'morning';
+let editingTab = 'morning';
+let items = load();
+let activeEmojiTarget = null;
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('kids-todo-v2'));
+    if (saved) return saved;
+  } catch(e) {}
+  return { morning: deepCopy(DEFAULT.morning), home: deepCopy(DEFAULT.home) };
+}
+function save() { localStorage.setItem('kids-todo-v2', JSON.stringify(items)); }
+function deepCopy(o) { return JSON.parse(JSON.stringify(o)); }
+
+// ── reset logic ──
+// lastReset は { morning: 'YYYY-MM-DD', home: 'YYYY-MM-DD' } 形式で保存
+function loadLastReset() {
+  try {
+    return JSON.parse(localStorage.getItem('kids-todo-reset')) || {};
+  } catch(e) { return {}; }
+}
+function saveLastReset(data) {
+  localStorage.setItem('kids-todo-reset', JSON.stringify(data));
+}
+function getResetKey(mode, date) {
+  // 朝モードは「その日の日付」、夜モードは「その日の日付+'-home'」をキーにする
+  const y = date.getFullYear(), m = pad(date.getMonth()+1), d = pad(date.getDate());
+  return mode === 'morning' ? `${y}-${m}-${d}` : `${y}-${m}-${d}-home`;
+}
+function checkAndReset(mode) {
+  const now = new Date();
+  const key = getResetKey(mode, now);
+  const lastReset = loadLastReset();
+  if (lastReset[mode] !== key) {
+    // まだこのモードの今回分のリセットをしていない
+    items[mode] = items[mode].map(item => ({ ...item, done: false }));
+    lastReset[mode] = key;
+    saveLastReset(lastReset);
+    save();
+  }
+}
+
+// ── clock & mode ──
+function getMode(date) {
+  const h = date.getHours();
+  return (h >= 0 && h < 12) ? 'morning' : 'home';
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+function updateClock() {
+  const now = new Date();
+  const mo = pad(now.getMonth()+1), d = pad(now.getDate());
+  const h = pad(now.getHours()), m = pad(now.getMinutes()), s = pad(now.getSeconds());
+  document.getElementById('clock').textContent = `${mo}月${d}日　${h}時${m}分${s}秒`;
+
+  const newMode = getMode(now);
+  if (newMode !== currentMode) {
+    currentMode = newMode;
+    renderMode();
+  }
+}
+
+function renderMode() {
+  checkAndReset(currentMode);
+  const body = document.body;
+  body.className = currentMode;
+  document.getElementById('mode-icon').textContent  = currentMode === 'morning' ? '☀️' : '🏠';
+  document.getElementById('mode-title').textContent = currentMode === 'morning' ? 'あさのおしたく' : 'おうちでやること';
+  // deco swap
+  document.getElementById('deco4').textContent = currentMode === 'morning' ? '🌙' : '⭐';
+  renderList();
+}
+
+// ── render list ──
+function renderList() {
+  const list = document.getElementById('todo-list');
+  const modeItems = items[currentMode];
+  list.innerHTML = '';
+
+  modeItems.forEach((item, i) => {
+    const li = document.createElement('li');
+    li.className = 'todo-item' + (item.done ? ' done' : '');
+    li.style.animationDelay = `${i * 0.06}s`;
+    li.innerHTML = `
+      <div class="check-circle">${item.done ? '✔' : ''}</div>
+      <span class="item-emoji">${item.emoji}</span>
+      <span class="item-label">${item.label}</span>
+    `;
+    li.addEventListener('click', () => toggleItem(i));
+    list.appendChild(li);
+  });
+
+  updateProgress();
+}
+
+function toggleItem(i) {
+  items[currentMode][i].done = !items[currentMode][i].done;
+  save();
+  renderList();
+  if (items[currentMode][i].done) bounce(i);
+}
+
+function bounce(i) {
+  const els = document.querySelectorAll('.todo-item');
+  if (!els[i]) return;
+  els[i].animate([
+    { transform:'scale(1)' },
+    { transform:'scale(1.07)' },
+    { transform:'scale(1)' },
+  ], { duration:300, easing:'cubic-bezier(0.34,1.56,0.64,1)' });
+}
+
+function updateProgress() {
+  const modeItems = items[currentMode];
+  const total = modeItems.length;
+  const done  = modeItems.filter(x => x.done).length;
+  const pct   = total ? Math.round(done/total*100) : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${done} / ${total} おわったよ！`;
+  if (total > 0 && done === total) {
+    showCelebration();
+  }
+}
+
+function showCelebration() {
+  document.getElementById('celeb-emoji').textContent = currentMode === 'morning' ? '☀️' : '🏠';
+  document.getElementById('celebration').classList.add('show');
+  launchConfetti();
+}
+
+function drawCrackers(ctx, origins) {
+  ctx.font = '3rem serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  origins.forEach(origin => {
+    ctx.save();
+    ctx.translate(origin.x, origin.y);
+    ctx.rotate(-Math.PI / 4);
+    ctx.fillText('🎉', 0, 0);
+    ctx.restore();
+  });
+}
+
+function closeCelebration() {
+  document.getElementById('celebration').classList.remove('show');
+  document.getElementById('confetti-wrap').innerHTML = '';
+  if (confettiAnimId) { cancelAnimationFrame(confettiAnimId); confettiAnimId = null; }
+}
+
+let confettiAnimId = null;
+
+function launchConfetti() {
+  const wrap = document.getElementById('confetti-wrap');
+  wrap.innerHTML = '';
+  const colors = ['#ffb347','#ff8c42','#5ba8e0','#ffd700','#ff6b9d','#7ed56f','#a78bfa','#ff4444','#44ddff'];
+
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;';
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  wrap.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+
+  const origins = [
+    { x: canvas.width * 0.2, y: canvas.height * 0.6 },
+    { x: canvas.width * 0.8, y: canvas.height * 0.6 },
+  ];
+
+  function makeParticles() {
+    const particles = [];
+    origins.forEach(origin => {
+      for (let i = 0; i < 80; i++) {
+        const angle = (-Math.PI / 2) + (Math.random() - 0.5) * Math.PI * 0.7;
+        const speed = 12 + Math.random() * 16;
+        particles.push({
+          x: origin.x, y: origin.y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          w: 7 + Math.random() * 7,
+          h: 10 + Math.random() * 8,
+          rot: Math.random() * Math.PI * 2,
+          rotV: (Math.random() - 0.5) * 0.3,
+          alpha: 1,
+          delay: Math.random() * 30,
+        });
+      }
+    });
+    return particles;
+  }
+
+  const gravity = 0.45;
+  let frame = 0;
+  let particles = makeParticles();
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawCrackers(ctx, origins);
+    let alive = false;
+    particles.forEach(p => {
+      if (frame < p.delay) { alive = true; return; }
+      p.vy  += gravity;
+      p.x   += p.vx;
+      p.y   += p.vy;
+      p.rot += p.rotV;
+      p.alpha -= 0.012;
+      if (p.alpha <= 0) return;
+      alive = true;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    frame++;
+    // 全部消えたら再発射
+    if (!alive) {
+      frame = 0;
+      particles = makeParticles();
+    }
+    confettiAnimId = requestAnimationFrame(animate);
+  }
+  confettiAnimId = requestAnimationFrame(animate);
+}
+
+// ── modal ──
+function openModal() {
+  editingTab = currentMode;
+  document.getElementById('modal-overlay').classList.add('open');
+  renderEditTab();
+  updateTabStyles();
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  closeEmojiPicker();
+}
+function switchEditTab(tab) {
+  editingTab = tab;
+  renderEditTab();
+  updateTabStyles();
+}
+function updateTabStyles() {
+  document.getElementById('tab-morning').className = 'mode-tab' + (editingTab==='morning' ? ' active-morning' : '');
+  document.getElementById('tab-home').className    = 'mode-tab' + (editingTab==='home'    ? ' active-home'    : '');
+}
+function renderEditTab() {
+  const editor = document.getElementById('item-editor');
+  editor.innerHTML = '';
+  items[editingTab].forEach((item, i) => {
+    editor.appendChild(makeEditRow(item, i));
+  });
+}
+function makeEditRow(item, i) {
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.dataset.index = i;
+  div.draggable = true;
+  div.innerHTML = `
+    <span class="drag-handle" title="ならびかえ">☰</span>
+    <button class="emoji-pick" data-index="${i}" title="えもじをえらぶ">${item.emoji}</button>
+    <input type="text" value="${item.label}" placeholder="こうもくをにゅうりょく" oninput="updateLabel(${i}, this.value)">
+    <button class="del-btn" onclick="deleteItem(${i})">🗑</button>
+  `;
+  div.querySelector('.emoji-pick').addEventListener('click', (e) => {
+    openEmojiPicker(e.currentTarget, i);
+    e.stopPropagation();
+  });
+
+  // ── mouse drag ──
+  div.addEventListener('dragstart', onDragStart);
+  div.addEventListener('dragover',  onDragOver);
+  div.addEventListener('dragleave', onDragLeave);
+  div.addEventListener('drop',      onDrop);
+  div.addEventListener('dragend',   onDragEnd);
+
+  // ── touch drag (iPad) ──
+  div.querySelector('.drag-handle').addEventListener('touchstart', onTouchStart, { passive: false });
+
+  return div;
+}
+function updateLabel(i, val) { items[editingTab][i].label = val; }
+function deleteItem(i) {
+  items[editingTab].splice(i, 1);
+  renderEditTab();
+}
+function addEditRow() {
+  if (items[editingTab].length >= 20) {
+    alert('こうもくは20こまでです！');
+    return;
+  }
+  items[editingTab].push({ emoji:'⭐', label:'', done:false });
+  renderEditTab();
+  const editor = document.getElementById('item-editor');
+  editor.lastChild && editor.lastChild.scrollIntoView({ behavior:'smooth' });
+}
+function saveItems() {
+  items[editingTab] = items[editingTab].filter(x => x.label.trim() !== '');
+  save();
+  closeModal();
+  renderList();
+}
+
+// ── drag & drop (mouse) ──
+let dragSrcIndex = null;
+function getRowIndex(el) { return parseInt(el.closest('.item-row').dataset.index); }
+function onDragStart(e) {
+  dragSrcIndex = getRowIndex(e.currentTarget);
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function onDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  const targetIndex = getRowIndex(e.currentTarget);
+  if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+    const arr = items[editingTab];
+    const [moved] = arr.splice(dragSrcIndex, 1);
+    arr.splice(targetIndex, 0, moved);
+    renderEditTab();
+  }
+}
+function onDragEnd(e) {
+  document.querySelectorAll('.item-row').forEach(r => {
+    r.classList.remove('dragging','drag-over');
+  });
+  dragSrcIndex = null;
+}
+
+// ── touch drag (iPad) ──
+let touchDragIndex = null;
+let touchClone = null;
+let touchOffsetY = 0;
+function onTouchStart(e) {
+  e.preventDefault();
+  const row = e.currentTarget.closest('.item-row');
+  touchDragIndex = parseInt(row.dataset.index);
+  const rect = row.getBoundingClientRect();
+  touchOffsetY = e.touches[0].clientY - rect.top;
+
+  // create floating clone
+  touchClone = row.cloneNode(true);
+  touchClone.style.cssText = `
+    position:fixed; z-index:999; left:${rect.left}px; top:${rect.top}px;
+    width:${rect.width}px; opacity:0.85; pointer-events:none;
+    background:white; border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  `;
+  document.body.appendChild(touchClone);
+  row.classList.add('dragging');
+
+  document.addEventListener('touchmove', onTouchMove, { passive: false });
+  document.addEventListener('touchend',  onTouchEnd);
+}
+function onTouchMove(e) {
+  e.preventDefault();
+  const y = e.touches[0].clientY;
+  if (touchClone) touchClone.style.top = (y - touchOffsetY) + 'px';
+
+  // highlight target row
+  document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
+  const el = document.elementFromPoint(e.touches[0].clientX, y);
+  if (el) {
+    const targetRow = el.closest('.item-row');
+    if (targetRow && parseInt(targetRow.dataset.index) !== touchDragIndex) {
+      targetRow.classList.add('drag-over');
+    }
+  }
+}
+function onTouchEnd(e) {
+  document.removeEventListener('touchmove', onTouchMove);
+  document.removeEventListener('touchend',  onTouchEnd);
+
+  if (touchClone) { touchClone.remove(); touchClone = null; }
+  document.querySelectorAll('.item-row').forEach(r => r.classList.remove('dragging'));
+
+  const touch = e.changedTouches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  if (el) {
+    const targetRow = el.closest('.item-row');
+    if (targetRow) {
+      const targetIndex = parseInt(targetRow.dataset.index);
+      if (touchDragIndex !== null && touchDragIndex !== targetIndex) {
+        const arr = items[editingTab];
+        const [moved] = arr.splice(touchDragIndex, 1);
+        arr.splice(targetIndex, 0, moved);
+        renderEditTab();
+      }
+    }
+  }
+  document.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over'));
+  touchDragIndex = null;
+}
+
+// ── emoji picker ──
+function buildEmojiPicker() {
+  const picker = document.getElementById('emoji-picker');
+  EMOJI_CATEGORIES.forEach(cat => {
+    const label = document.createElement('span');
+    label.className = 'emoji-cat-label';
+    label.textContent = cat.label;
+    picker.appendChild(label);
+    const row = document.createElement('div');
+    row.className = 'emoji-row';
+    cat.emojis.forEach(em => {
+      const sp = document.createElement('span');
+      sp.textContent = em;
+      sp.title = em;
+      sp.addEventListener('click', (e) => {
+        if (activeEmojiTarget !== null) {
+          items[editingTab][activeEmojiTarget].emoji = em;
+          renderEditTab();
+        }
+        closeEmojiPicker();
+        e.stopPropagation();
+      });
+      row.appendChild(sp);
+    });
+    picker.appendChild(row);
+  });
+}
+function openEmojiPicker(btn, index) {
+  activeEmojiTarget = index;
+  const picker = document.getElementById('emoji-picker');
+  const rect = btn.getBoundingClientRect();
+  picker.classList.add('open');
+  picker.style.top  = (rect.bottom + 6) + 'px';
+  picker.style.left = Math.max(8, rect.left - 80) + 'px';
+}
+function closeEmojiPicker() {
+  document.getElementById('emoji-picker').classList.remove('open');
+  activeEmojiTarget = null;
+}
+
+// ── init ──
+document.getElementById('edit-btn').addEventListener('click', openModal);
+document.getElementById('modal-overlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+document.addEventListener('click', () => closeEmojiPicker());
+
+buildEmojiPicker();
+renderMode();
+updateClock();
+setInterval(updateClock, 1000);
+
+// optional: for testing, allow query param ?mode=home
+const params = new URLSearchParams(location.search);
+if (params.get('mode') === 'home') {
+  currentMode = 'home';
+  renderMode();
+} else if (params.get('mode') === 'morning') {
+  currentMode = 'morning';
+  renderMode();
+}
+</script>
+</body>
+</html>
