@@ -397,9 +397,12 @@
     border-radius: 16px;
     padding: 10px 12px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-    width: 280px;
-    max-height: 340px;
+    width: 290px;
+    max-height: 60vh;
     overflow-y: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
   #emoji-picker.open { display: block; }
   .emoji-cat-label {
@@ -1019,17 +1022,10 @@ function buildEmojiPicker() {
     picker.insertBefore(row, freeWrap);
   });
 }
-function applyFreeEmoji() {
-  const val = document.getElementById('emoji-free-input').value.trim();
-  if (!val) return;
-  if (activeEmojiTarget !== null) {
-    items[editingTab][activeEmojiTarget].emoji = val;
-    renderEditTab();
-  }
-  closeEmojiDialog();
-  closeEmojiPicker();
-}
+let dialogEmojiTarget = null;
+
 function openEmojiDialog() {
+  dialogEmojiTarget = activeEmojiTarget;
   document.getElementById('emoji-free-input').value = '';
   document.getElementById('emoji-input-dialog').classList.add('open');
   closeEmojiPicker();
@@ -1037,15 +1033,21 @@ function openEmojiDialog() {
 }
 function closeEmojiDialog() {
   document.getElementById('emoji-input-dialog').classList.remove('open');
+  dialogEmojiTarget = null;
+}
+function applyFreeEmoji() {
+  const val = document.getElementById('emoji-free-input').value.trim();
+  if (!val) return;
+  if (dialogEmojiTarget !== null) {
+    items[editingTab][dialogEmojiTarget].emoji = val;
+    renderEditTab();
+  }
+  closeEmojiDialog();
 }
 function openEmojiPicker(btn, index) {
   activeEmojiTarget = index;
-  const picker = document.getElementById('emoji-picker');
   document.getElementById('emoji-free-input').value = '';
-  const rect = btn.getBoundingClientRect();
-  picker.classList.add('open');
-  picker.style.top  = (rect.bottom + 6) + 'px';
-  picker.style.left = Math.max(8, rect.left - 80) + 'px';
+  document.getElementById('emoji-picker').classList.add('open');
 }
 function closeEmojiPicker() {
   document.getElementById('emoji-picker').classList.remove('open');
