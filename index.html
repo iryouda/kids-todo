@@ -625,11 +625,12 @@ function getResetKey(mode, date) {
   return mode === 'morning' ? `${y}-${m}-${d}` : `${y}-${m}-${d}-home`;
 }
 function checkAndReset(mode) {
+  // 祝福画面表示中はリセットしない
+  if (document.getElementById('celebration').classList.contains('show')) return;
   const now = new Date();
   const key = getResetKey(mode, now);
   const lastReset = loadLastReset();
   if (lastReset[mode] !== key) {
-    // まだこのモードの今回分のリセットをしていない
     items[mode] = items[mode].map(item => ({ ...item, done: false }));
     lastReset[mode] = key;
     saveLastReset(lastReset);
@@ -691,9 +692,10 @@ function renderList() {
 
 function toggleItem(i) {
   items[currentMode][i].done = !items[currentMode][i].done;
+  const isDone = items[currentMode][i].done;
   save();
   renderList();
-  if (items[currentMode][i].done) bounce(i);
+  if (isDone) bounce(i);
 }
 
 function bounce(i) {
@@ -714,7 +716,10 @@ function updateProgress() {
   document.getElementById('progress-bar').style.width = pct + '%';
   document.getElementById('progress-text').textContent = `${done} / ${total} おわったよ！`;
   if (total > 0 && done === total) {
-    showCelebration();
+    // すでに祝福画面が表示中なら再度呼ばない
+    if (!document.getElementById('celebration').classList.contains('show')) {
+      showCelebration();
+    }
   }
 }
 
